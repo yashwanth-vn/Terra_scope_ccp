@@ -406,10 +406,3 @@ def get_default_crop_suggestions() -> Dict:
             }
         ]
     }
-</function_results>
-
-Now let me mark the ML model structure as complete and continue with creating basic React components:
-
-<function_calls>
-<invoke name="mark_todo_as_done">
-<parameter name="todo_ids">["84151462-e899-4801-82b7-d73e86444f66"]

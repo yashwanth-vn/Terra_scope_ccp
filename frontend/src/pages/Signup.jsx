@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,15 @@ function Signup() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { signup, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
 
   const handleChange = (e) => {
     setFormData({
@@ -40,17 +50,13 @@ function Signup() {
     }
 
     try {
-      // TODO: Implement signup API call
-      console.log('Signup data:', formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // TODO: Handle successful signup - auto login and redirect
-      alert('Account created successfully! (This will be replaced with proper authentication)')
-      
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...signupData } = formData
+      await signup(signupData)
+      // Redirect to home page after successful signup
+      navigate('/')
     } catch (err) {
-      setError('Failed to create account. Please try again.')
+      setError(err.message || 'Failed to create account. Please try again.')
     } finally {
       setLoading(false)
     }

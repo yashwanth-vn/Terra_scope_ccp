@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -8,6 +9,15 @@ function Login() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { login, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
 
   const handleChange = (e) => {
     setFormData({
@@ -22,17 +32,11 @@ function Login() {
     setError('')
 
     try {
-      // TODO: Implement login API call
-      console.log('Login data:', formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // TODO: Handle successful login - store token, redirect to dashboard
-      alert('Login successful! (This will be replaced with proper authentication)')
-      
+      await login(formData.email, formData.password)
+      // Redirect to home page after successful login
+      navigate('/')
     } catch (err) {
-      setError('Login failed. Please check your credentials.')
+      setError(err.message || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }

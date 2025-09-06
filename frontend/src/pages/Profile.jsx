@@ -1,19 +1,27 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 function Profile() {
-  // Mock user data - in production this would come from authentication context
-  const [user, setUser] = useState({
-    firstName: 'John',
-    lastName: 'Farmer',
-    email: 'john.farmer@email.com',
-    location: 'Delhi, India',
-    contactNumber: '+91 9876543210',
-    joinedDate: '2024-09-06'
-  })
-
+  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+  
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState({ ...user })
+  const [editData, setEditData] = useState(user || {})
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login')
+    }
+  }, [isAuthenticated, navigate])
+
+  // Update editData when user data changes
+  useEffect(() => {
+    if (user) {
+      setEditData({ ...user })
+    }
+  }, [user])
 
   const handleEditChange = (e) => {
     setEditData({
@@ -34,11 +42,10 @@ function Profile() {
     setIsEditing(false)
   }
 
-  const handleLogout = () => {
-    // TODO: Implement proper logout - clear tokens, redirect to home
+  const handleLogout = async () => {
     if (window.confirm('Are you sure you want to log out?')) {
-      alert('Logged out successfully! (This will be replaced with proper authentication)')
-      // Redirect to home page
+      await logout()
+      navigate('/')
     }
   }
 
@@ -52,11 +59,11 @@ function Profile() {
             <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem'}}>
               <div>
                 <h4>Personal Information</h4>
-                <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-                <p><strong>Email:</strong> {user.email}</p>
-                <p><strong>Location:</strong> {user.location || 'Not specified'}</p>
-                <p><strong>Contact:</strong> {user.contactNumber || 'Not specified'}</p>
-                <p><strong>Member since:</strong> {new Date(user.joinedDate).toLocaleDateString()}</p>
+                <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
+                <p><strong>Email:</strong> {user?.email}</p>
+                <p><strong>Location:</strong> {user?.location || 'Not specified'}</p>
+                <p><strong>Contact:</strong> {user?.contactNumber || 'Not specified'}</p>
+                <p><strong>Member since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</p>
               </div>
               
               <div>
@@ -185,12 +192,6 @@ function Profile() {
           >
             📈 View History
           </button>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => alert('Feature coming soon!')}
-          >
-            📋 Export Reports
-          </button>
         </div>
       </div>
 
@@ -207,8 +208,8 @@ function Profile() {
             <small style={{color: '#666'}}>1 week ago - Added location information</small>
           </div>
           <div style={{padding: '10px', borderBottom: '1px solid #eee', marginBottom: '10px'}}>
-            <p><strong>Account Created</strong></p>
-            <small style={{color: '#666'}}>{new Date(user.joinedDate).toLocaleDateString()} - Welcome to Terra Scope!</small>
+            <p><strong>Welcome to Terra Scope!</strong></p>
+            <small style={{color: '#666'}}>Start by adding your first soil analysis</small>
           </div>
         </div>
       </div>

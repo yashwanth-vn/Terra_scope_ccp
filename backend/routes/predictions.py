@@ -5,6 +5,7 @@ from models.soil_data import SoilData
 from ml_models.fertility_model import FertilityPredictor
 from utils.weather import get_weather_data
 from utils.recommendations import get_fertilizer_recommendations, get_crop_suggestions
+from database import db
 import json
 
 predictions_bp = Blueprint('predictions', __name__)

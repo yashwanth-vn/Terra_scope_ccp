@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 function Dashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { isAuthenticated, token } = useAuth()
+  const navigate = useNavigate()
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login')
+    }
+  }, [isAuthenticated, navigate])
 
   // Mock data for demonstration
   const mockData = {
@@ -126,76 +136,61 @@ function Dashboard() {
         </p>
       </div>
 
-      <div className="results-grid">
+      <div className="results-grid" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', margin: '20px 0'}}>
         {/* Fertility Status */}
-        <div className={`result-card fertility-${data.fertility.level.toLowerCase()}`}>
-          <h3>Fertility Level</h3>
-          <div style={{fontSize: '2rem', fontWeight: 'bold', color: getFertilityColor(data.fertility.level)}}>
+        <div className="result-card" style={{padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'}}>
+          <h3 style={{color: '#2c5530', marginBottom: '15px'}}>🎯 Fertility Level</h3>
+          <div style={{fontSize: '2rem', fontWeight: 'bold', color: getFertilityColor(data.fertility.level), marginBottom: '10px'}}>
             {data.fertility.level}
           </div>
-          <p>Score: {data.fertility.score}/100</p>
-          <p>Confidence: {data.fertility.confidence}%</p>
+          <p><strong>Score:</strong> {data.fertility.score}/100</p>
+          <p><strong>Confidence:</strong> {data.fertility.confidence}%</p>
         </div>
 
         {/* Soil Parameters */}
-        <div className="result-card">
-          <h3>Soil Parameters</h3>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
+        <div className="result-card" style={{padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'}}>
+          <h3 style={{color: '#2c5530', marginBottom: '15px'}}>🧪 Soil Analysis</h3>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '14px'}}>
             <div><strong>pH:</strong> {data.soilData.ph}</div>
             <div><strong>Moisture:</strong> {data.soilData.moisture}%</div>
             <div><strong>Nitrogen:</strong> {data.soilData.nitrogen} mg/kg</div>
             <div><strong>Phosphorus:</strong> {data.soilData.phosphorus} mg/kg</div>
             <div><strong>Potassium:</strong> {data.soilData.potassium} mg/kg</div>
-            <div><strong>Organic Carbon:</strong> {data.soilData.organicCarbon}%</div>
+            <div><strong>Org. Carbon:</strong> {data.soilData.organicCarbon}%</div>
           </div>
         </div>
 
-        {/* Weather Impact */}
-        <div className="result-card">
-          <h3>Weather Conditions</h3>
-          <p><strong>Temperature:</strong> {data.weather_impact.temperature}°C</p>
+        {/* Weather & Crop Info Combined */}
+        <div className="result-card" style={{padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'}}>
+          <h3 style={{color: '#2c5530', marginBottom: '15px'}}>🌤️ Current Conditions</h3>
+          <p><strong>Weather:</strong> {data.weather_impact.temperature}°C, {data.weather_impact.description}</p>
           <p><strong>Humidity:</strong> {data.weather_impact.humidity}%</p>
-          <p><strong>Conditions:</strong> {data.weather_impact.description}</p>
-          <p><strong>Location:</strong> {data.weather_impact.location}</p>
-        </div>
-
-        {/* Crop Info */}
-        <div className="result-card">
-          <h3>Current Crop Plan</h3>
           <p><strong>Crop:</strong> {data.soilData.cropType || 'Not specified'}</p>
           <p><strong>Season:</strong> {data.soilData.season}</p>
           <div style={{marginTop: '15px'}}>
-            <Link to="/soil-input" className="btn btn-secondary">Update Info</Link>
+            <Link to="/soil-input" className="btn btn-secondary" style={{fontSize: '12px', padding: '6px 12px'}}>Update Info</Link>
           </div>
         </div>
       </div>
 
-      {/* Fertilizer Recommendations */}
-      <div className="card">
-        <h3>💡 Fertilizer Recommendations</h3>
+      {/* Recommendations */}
+      <div className="card" style={{padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '20px'}}>
+        <h3 style={{color: '#2c5530', marginBottom: '20px'}}>💡 Recommendations</h3>
+        
         {data.fertilizer_recommendations.primary_fertilizers.map((fertilizer, index) => (
-          <div key={index} style={{marginBottom: '15px', padding: '15px', background: '#f8f9fa', borderRadius: '5px'}}>
-            <h4 style={{margin: '0 0 10px 0', color: '#2c5530'}}>{fertilizer.name}</h4>
-            <p><strong>Purpose:</strong> {fertilizer.purpose}</p>
-            <p><strong>Application Rate:</strong> {fertilizer.application_rate}</p>
-            <p><strong>Priority:</strong> 
-              <span style={{
-                color: fertilizer.priority === 'high' ? '#dc3545' : fertilizer.priority === 'medium' ? '#ffc107' : '#28a745',
-                marginLeft: '8px',
-                fontWeight: 'bold'
-              }}>
-                {fertilizer.priority.toUpperCase()}
-              </span>
-            </p>
+          <div key={index} style={{marginBottom: '15px', padding: '15px', background: '#f8f9fa', borderRadius: '5px', border: '1px solid #e9ecef'}}>
+            <h4 style={{margin: '0 0 8px 0', color: '#2c5530', fontSize: '16px'}}>{fertilizer.name}</h4>
+            <p style={{margin: '4px 0', fontSize: '14px'}}><strong>Purpose:</strong> {fertilizer.purpose}</p>
+            <p style={{margin: '4px 0', fontSize: '14px'}}><strong>Rate:</strong> {fertilizer.application_rate}</p>
           </div>
         ))}
 
         {data.fertilizer_recommendations.application_timing.length > 0 && (
-          <div>
-            <h4>Application Timing:</h4>
-            <ul>
-              {data.fertilizer_recommendations.application_timing.map((tip, index) => (
-                <li key={index}>{tip}</li>
+          <div style={{marginTop: '15px'}}>
+            <h4 style={{fontSize: '16px', color: '#2c5530', marginBottom: '10px'}}>Application Tips:</h4>
+            <ul style={{margin: 0, paddingLeft: '20px'}}>
+              {data.fertilizer_recommendations.application_timing.slice(0, 2).map((tip, index) => (
+                <li key={index} style={{fontSize: '14px', marginBottom: '5px'}}>{tip}</li>
               ))}
             </ul>
           </div>
@@ -203,42 +198,30 @@ function Dashboard() {
       </div>
 
       {/* Crop Suggestions */}
-      <div className="card">
-        <h3>🌾 Suitable Crops for Your Soil</h3>
+      <div className="card" style={{padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '30px'}}>
+        <h3 style={{color: '#2c5530', marginBottom: '20px'}}>🌾 Recommended Crops</h3>
         
-        {data.crop_suggestions.highly_suitable.length > 0 && (
-          <div style={{marginBottom: '20px'}}>
-            <h4 style={{color: '#28a745'}}>Highly Suitable Crops</h4>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
-              {data.crop_suggestions.highly_suitable.map((crop, index) => (
-                <div key={index} style={{padding: '10px', background: '#d4edda', borderRadius: '5px', border: '1px solid #c3e6cb'}}>
-                  <strong>{crop.name}</strong> ({crop.type})
-                  <br />
-                  <small>Suitability: {crop.suitability_score}%</small>
-                </div>
-              ))}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px'}}>
+          {data.crop_suggestions.highly_suitable.slice(0, 3).map((crop, index) => (
+            <div key={index} style={{padding: '15px', background: '#d4edda', borderRadius: '5px', border: '1px solid #c3e6cb', textAlign: 'center'}}>
+              <div style={{fontSize: '16px', fontWeight: 'bold', color: '#155724', marginBottom: '5px'}}>{crop.name}</div>
+              <div style={{fontSize: '12px', color: '#155724', textTransform: 'capitalize'}}>{crop.type}</div>
+              <div style={{fontSize: '12px', color: '#28a745', marginTop: '8px', fontWeight: 'bold'}}>Suitability: {crop.suitability_score}%</div>
             </div>
-          </div>
-        )}
-
-        {data.crop_suggestions.moderately_suitable.length > 0 && (
-          <div>
-            <h4 style={{color: '#ffc107'}}>Moderately Suitable Crops</h4>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
-              {data.crop_suggestions.moderately_suitable.map((crop, index) => (
-                <div key={index} style={{padding: '10px', background: '#fff3cd', borderRadius: '5px', border: '1px solid #ffeaa7'}}>
-                  <strong>{crop.name}</strong> ({crop.type})
-                  <br />
-                  <small>Suitability: {crop.suitability_score}%</small>
-                </div>
-              ))}
+          ))}
+          
+          {data.crop_suggestions.moderately_suitable.slice(0, 2).map((crop, index) => (
+            <div key={index + 100} style={{padding: '15px', background: '#fff3cd', borderRadius: '5px', border: '1px solid #ffeaa7', textAlign: 'center'}}>
+              <div style={{fontSize: '16px', fontWeight: 'bold', color: '#856404', marginBottom: '5px'}}>{crop.name}</div>
+              <div style={{fontSize: '12px', color: '#856404', textTransform: 'capitalize'}}>{crop.type}</div>
+              <div style={{fontSize: '12px', color: '#ffc107', marginTop: '8px', fontWeight: 'bold'}}>Suitability: {crop.suitability_score}%</div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
       <div className="text-center" style={{margin: '30px 0'}}>
-        <Link to="/soil-input" className="btn btn-primary">Add New Soil Data</Link>
+        <Link to="/soil-input" className="btn btn-primary" style={{padding: '12px 24px', fontSize: '16px'}}>Add New Soil Data</Link>
       </div>
     </div>
   )
