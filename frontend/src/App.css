@@ -1,201 +1,127 @@
 .App {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f8fffe 0%, #e8f5e8 100%);
+  background: linear-gradient(180deg, #f5f3f0 0%, #e8e2d5 100%);
 }
 
 .navbar {
-  background: linear-gradient(135deg, #1b4332 0%, #2d5016 50%, #1b4332 100%);
+  background: linear-gradient(135deg, #3e2723 0%, #5d4037 50%, #3e2723 100%);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(27, 67, 50, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.navbar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,20 Q30,10 40,20 T60,20 T80,20" stroke="%23ffffff" stroke-width="0.5" fill="none" opacity="0.1"/></svg>') repeat;
-  pointer-events: none;
-}
-
-.nav-brand {
-  position: relative;
-  z-index: 2;
+  box-shadow: 0 2px 8px rgba(62, 39, 35, 0.2);
 }
 
 .nav-brand a {
-  color: white;
+  color: #d7ccc8;
   text-decoration: none;
-  font-size: 28px;
-  font-weight: 700;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
+  font-size: 24px;
+  font-weight: 600;
   font-family: 'Arial', sans-serif;
 }
 
 .nav-brand a:hover {
-  text-shadow: 2px 2px 8px rgba(255,255,255,0.3);
-  transform: translateY(-1px);
+  color: #efebe9;
 }
 
 .nav-links {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
-  position: relative;
-  z-index: 2;
 }
 
 .nav-links a {
-  color: white;
+  color: #d7ccc8;
   text-decoration: none;
-  padding: 10px 18px;
-  border-radius: 25px;
-  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border-radius: 6px;
   font-weight: 500;
-  position: relative;
-  overflow: hidden;
   background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  backdrop-filter: blur(10px);
-}
-
-.nav-links a::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.nav-links a:hover::before {
-  left: 100%;
+  transition: background-color 0.2s ease;
 }
 
 .nav-links a:hover {
   background: rgba(255,255,255,0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  color: #efebe9;
 }
 
 .nav-links button {
   color: white;
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  background: #8d4004;
   border: none;
-  padding: 10px 20px;
-  border-radius: 25px;
-  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3);
+  transition: background-color 0.2s ease;
   font-size: 14px;
 }
 
 .nav-links button:hover {
-  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(220, 53, 69, 0.4);
+  background: #bf360c;
 }
 
 .nav-user-greeting {
-  color: #a8e6a3;
+  color: #d7ccc8;
   font-weight: 500;
   margin-right: 15px;
   font-size: 14px;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 .main-content {
   min-height: calc(100vh - 80px);
-  position: relative;
 }
 
 .home-hero {
   text-align: center;
-  padding: 100px 20px;
-  background: linear-gradient(135deg, #1b4332 0%, #2d5016 30%, #40916c 70%, #1b4332 100%);
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.home-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M200,300 Q400,100 600,300 T1000,300 V1000 H0 Z" fill="%23ffffff" opacity="0.05"/></svg>') no-repeat center bottom;
-  background-size: cover;
-  pointer-events: none;
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #5d4037 0%, #795548 50%, #3e2723 100%);
+  color: #f5f5f5;
 }
 
 .home-hero h1 {
-  font-size: 3.5rem;
-  margin-bottom: 1.5rem;
-  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
-  font-weight: 800;
-  position: relative;
-  z-index: 2;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
 }
 
 .home-hero p {
-  font-size: 1.4rem;
-  margin-bottom: 3rem;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-  position: relative;
-  z-index: 2;
+  opacity: 0.9;
 }
 
 .home-hero .btn {
-  position: relative;
-  z-index: 2;
   margin: 0 10px;
-  padding: 15px 30px;
+  padding: 12px 24px;
   font-size: 16px;
-  font-weight: 600;
-  border-radius: 30px;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
 .home-hero .btn-primary {
-  background: linear-gradient(135deg, #52b788 0%, #40916c 100%);
+  background: #6d4c41;
   border: none;
-  box-shadow: 0 4px 20px rgba(64, 145, 108, 0.4);
+  color: white;
 }
 
 .home-hero .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(64, 145, 108, 0.6);
-  background: linear-gradient(135deg, #40916c 0%, #2d5016 100%);
+  background: #5d4037;
 }
 
 .home-hero .btn-secondary {
-  background: rgba(255,255,255,0.2);
-  border: 2px solid rgba(255,255,255,0.3);
-  backdrop-filter: blur(10px);
+  background: transparent;
+  border: 2px solid #d7ccc8;
+  color: #d7ccc8;
 }
 
 .home-hero .btn-secondary:hover {
-  background: rgba(255,255,255,0.3);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  color: white;
 }
 
 .features {
@@ -208,15 +134,16 @@
 }
 
 .feature-card {
-  background: white;
-  padding: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
   border-radius: 8px;
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid rgba(141, 110, 99, 0.1);
 }
 
 .feature-card h3 {
-  color: #2c5530;
+  color: #5d4037;
   margin-bottom: 1rem;
 }
 
@@ -242,13 +169,13 @@
 }
 
 .fertility-low {
-  border-left: 4px solid #dc3545;
+  border-left: 4px solid #d84315;
 }
 
 .fertility-medium {
-  border-left: 4px solid #ffc107;
+  border-left: 4px solid #f57c00;
 }
 
 .fertility-high {
-  border-left: 4px solid #28a745;
+  border-left: 4px solid #689f38;
 }
