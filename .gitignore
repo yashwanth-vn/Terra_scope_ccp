@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Build outputs
+/frontend/dist/
+/backend/build/
+
+# ML Models
+/backend/ml_models/*.pkl
+/backend/ml_models/*.joblib
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Flask
+instance/
+.webassets-cache
+
+# Coverage reports
+htmlcov/
+.coverage
+.pytest_cache/
