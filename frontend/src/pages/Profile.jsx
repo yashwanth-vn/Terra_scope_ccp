@@ -186,12 +186,9 @@ function Profile() {
           <Link to="/dashboard" className="btn btn-success">
             📊 View Dashboard
           </Link>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => alert('Feature coming soon!')}
-          >
+          <Link to="/history" className="btn btn-secondary">
             📈 View History
-          </button>
+          </Link>
         </div>
       </div>
 

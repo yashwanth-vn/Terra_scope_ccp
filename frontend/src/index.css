@@ -104,3 +104,45 @@ body {
 .mt-3 {
   margin-top: 1rem;
 }
+
+/* Button group styles for proper alignment */
+.btn-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-group-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-group-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Responsive button groups */
+@media (max-width: 640px) {
+  .btn-group,
+  .btn-group-left,
+  .btn-group-right {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-group .btn,
+  .btn-group-left .btn,
+  .btn-group-right .btn {
+    width: 100%;
+    margin: 0;
+  }
+}

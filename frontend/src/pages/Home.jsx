@@ -8,9 +8,9 @@ function Home() {
       <div className="home-hero">
         <h1>Terra Scope 🌱</h1>
         <p>Predict and monitor soil fertility with AI-powered insights</p>
-        <div>
+        <div className="btn-group">
           <Link to="/signup" className="btn btn-primary">Get Started</Link>
-          <Link to="/login" className="btn btn-secondary" style={{marginLeft: '1rem'}}>Login</Link>
+          <Link to="/login" className="btn btn-secondary">Login</Link>
         </div>
       </div>
 

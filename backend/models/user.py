@@ -14,8 +14,10 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationship with soil data
+    # Relationships
     soil_data = db.relationship('SoilData', backref='user', lazy=True, cascade='all, delete-orphan')
+    chat_sessions = db.relationship('ChatSession', backref='user', lazy=True, cascade='all, delete-orphan')
+    chat_messages = db.relationship('ChatMessage', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<User {self.email}>'

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Debug - Terra Scope</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #cce7ff; color: #004085; border: 1px solid #b8daff; }
+        button {
+            padding: 12px 24px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+        }
+        button:hover { background-color: #0056b3; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .login-form {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Terra Scope Login Debug</h1>
+        <p>This page helps debug login issues and provides quick access to the application.</p>
+        
+        <div id="authStatus"></div>
+        
+        <div class="login-form">
+            <h3>🚀 Quick Login</h3>
+            <input type="email" id="email" placeholder="Email" value="test@terrascope.com">
+            <input type="password" id="password" placeholder="Password" value="test123">
+            <button onclick="quickLogin()">Login & Go to Dashboard</button>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="checkCurrentAuth()">Check Current Auth</button>
+            <button onclick="clearStorage()">Clear Storage</button>
+            <button onclick="goToApp()">Go to Main App</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(div);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function checkCurrentAuth() {
+            log('Checking current authentication status...', 'info');
+            
+            const authToken = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            
+            if (authToken) {
+                log(`✅ Auth token exists: ${authToken.substring(0, 30)}...`, 'success');
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        log(`✅ User data: ${userData.firstName} ${userData.lastName} (${userData.email})`, 'success');
+                        log('🎉 You are logged in! Try accessing the dashboard now.', 'success');
+                    } catch (e) {
+                        log(`❌ Invalid user data: ${e.message}`, 'error');
+                        localStorage.removeItem('user');
+                    }
+                } else {
+                    log('⚠️ No user data found', 'error');
+                }
+            } else {
+                log('❌ No auth token found - you need to log in', 'error');
+            }
+        }
+
+        async function quickLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                log('❌ Please enter both email and password', 'error');
+                return;
+            }
+            
+            log('🔄 Logging in...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store in localStorage
+                    localStorage.setItem('authToken', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    log(`✅ Login successful! Welcome ${data.user.firstName}!`, 'success');
+                    log('🚀 Redirecting to dashboard...', 'success');
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:3000/dashboard';
+                    }, 2000);
+                    
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Login failed: ${errorData.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            log('🧹 Storage cleared', 'info');
+        }
+
+        function goToApp() {
+            window.location.href = 'http://localhost:3000';
+        }
+
+        // Auto-check auth on page load
+        window.onload = function() {
+            checkCurrentAuth();
+        };
+    </script>
+</body>
+</html>

@@ -2,181 +2,164 @@
 
 This file provides guidance to WARP (warp.dev) when working with code in this repository.
 
-## Common Development Commands
+## Commands
 
-### Backend (Flask)
-```powershell
-# Navigate to backend directory
-cd backend
-
-# Create and activate virtual environment (Windows)
+### Development Setup
+```bash
+# Backend setup (from backend directory)
 python -m venv venv
-venv\Scripts\activate
-
-# Install dependencies
+venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-
-# Run Flask development server
 python app.py
 
-# Run single tests
-python -m pytest tests/test_specific.py::test_function_name
-```
-
-### Frontend (React + Vite)
-```powershell
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
+# Frontend setup (from frontend directory)
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
-
-# Run linter
-npm run lint
-
-# Preview production build
-npm run preview
 ```
 
-### Full Stack Development
-```powershell
-# Start both servers (run in separate terminals)
-# Terminal 1 - Backend
-cd backend && python app.py
+### Database Management
+```bash
+# Initialize database and create tables
+python manage_db.py
 
-# Terminal 2 - Frontend  
-cd frontend && npm run dev
+# Key database utilities
+python manage_db.py show_db_info     # View database status and table counts
+python manage_db.py show_users       # List all users
+python manage_db.py show_soil_data   # List all soil analysis records
+python manage_db.py create_sample_user    # Create demo user (demo@terrascope.com / demo123)
+python manage_db.py backup_database  # Backup database with timestamp
+
+# Quick database queries
+python quick_query.py  # Interactive database query tool
+```
+
+### Testing & Development
+```bash
+# Run integration tests
+python test_integration.py          # Basic API tests
+python test_full_integration.py     # Full workflow tests
+
+# Create test user programmatically
+python create_test_user.py
+
+# Train ML model with new data
+python train_model.py              # Basic model training
+python train_enhanced_model.py     # Enhanced stacking ensemble model
+```
+
+### Frontend Commands
+```bash
+# From frontend directory
+npm run dev      # Start development server (localhost:3000)
+npm run build    # Build for production
+npm run lint     # ESLint code checking
+npm run preview  # Preview production build
 ```
 
 ## Architecture Overview
 
-### System Design
-Terra Scope is a full-stack web application with clear separation between frontend and backend:
+### Full-Stack Structure
+Terra Scope is an AI-powered soil fertility analysis platform with a **React frontend** and **Flask backend**, designed to help farmers make data-driven agricultural decisions.
 
-- **Frontend**: React 18 with Vite, uses React Router for client-side routing and Axios for API communication
-- **Backend**: Flask REST API with SQLAlchemy ORM, JWT authentication, and ML-powered predictions
-- **Database**: SQLite (development) with models for User and SoilData
-- **ML Pipeline**: Stacking Ensemble (Random Forest + XGBoost + Logistic Regression) for soil fertility prediction
+### Backend Architecture (Flask)
+- **Main Application**: `app.py` - Flask app with CORS, JWT auth, and blueprint registration
+- **Database**: SQLAlchemy ORM with SQLite (dev) / PostgreSQL (production)
+- **Authentication**: JWT tokens with Flask-JWT-Extended + bcrypt password hashing
+- **API Structure**: Organized into blueprints (`auth`, `soil`, `predictions`, `chat`, `history`)
 
-### Key Architectural Patterns
+### Machine Learning Pipeline
+The core ML system uses a **Stacking Ensemble** approach:
+- **Base Learners**: Random Forest + XGBoost classifiers
+- **Meta-Learner**: Logistic Regression for final predictions
+- **Training Data**: Synthetic agricultural data with realistic parameter distributions
+- **Features**: Soil pH, N-P-K values, organic carbon, moisture, weather integration
+- **Prediction Service**: `services/enhanced_predictor.py` handles real-time fertility analysis
 
-**Backend Structure (Flask)**:
-- Blueprint-based route organization (`routes/` directory)
-- Model-based database layer (`models/` directory)  
-- Utility modules for external integrations (`utils/` directory)
-- ML models encapsulated in dedicated classes (`ml_models/` directory)
-- Centralized application factory pattern in `app.py`
+### Database Schema
+- **Users**: Authentication, profile, location data
+- **SoilData**: Lab test results, ML predictions, fertilizer recommendations
+- **ChatSession/ChatMessage**: AI chatbot conversation history
+- **AnalysisHistory**: Track prediction accuracy and user activity patterns
 
-**Frontend Structure (React)**:
-- Page-based routing with components in `pages/`
-- Service layer for API communication in `services/`
-- Component-based architecture with reusable UI components
+### Frontend Architecture (React + Vite)
+- **State Management**: React Context API (`AuthContext`)
+- **Routing**: React Router DOM with protected routes
+- **HTTP Client**: Axios with JWT token interceptors
+- **Styling**: Plain CSS with agricultural theme (green gradients, glassmorphism effects)
+- **Key Components**: Dashboard, SoilInput, Profile, Chatbot, History
 
-**Data Flow**:
-1. User inputs soil parameters via React frontend
-2. JWT-authenticated API calls to Flask backend
-3. Weather data integration via OpenWeatherMap API
-4. ML model processes soil + weather data
-5. Fertilizer recommendations generated via rule-based system
-6. Results stored in SQLAlchemy models and returned to frontend
+### External Integrations
+- **Weather API**: OpenWeatherMap for temperature/rainfall data affecting soil analysis
+- **Location Services**: Browser geolocation + OpenWeather geocoding
+- **ML Models**: scikit-learn and XGBoost for ensemble predictions
 
-### Critical Integration Points
+## Development Patterns
 
-**Authentication Flow**:
-- JWT tokens managed by Flask-JWT-Extended
-- Frontend stores tokens and includes in API requests
-- User model contains profile info and location for weather integration
+### API Route Structure
+```
+/api/auth/*     - User authentication (signup, login, profile)
+/api/soil/*     - Soil data CRUD operations
+/api/predictions/* - ML fertility analysis and recommendations
+/api/chat/*     - AI chatbot interactions
+/api/history/*  - User activity and analysis history
+```
 
-**ML Prediction Pipeline**:
-- `FertilityPredictor` class handles model lifecycle (training, loading, prediction)
-- Stacking ensemble combines Random Forest + XGBoost predictions via Logistic Regression meta-learner  
-- Weather data from OpenWeatherMap API integrated as additional features
-- Fallback to rule-based prediction if ML model fails
+### Database Patterns
+- All models inherit from SQLAlchemy with automatic timestamps
+- Foreign key relationships with cascade delete
+- JSON storage for complex data (recommendations, chat history)
+- Built-in helper methods for data analysis (NPK ratios, pH optimization)
 
-**External API Integration**:
-- Weather service in `utils/weather.py` handles OpenWeatherMap API calls
-- Recommendation engine in `utils/recommendations.py` generates fertilizer and crop suggestions
-- Error handling with fallback to default values when APIs unavailable
+### Frontend Data Flow
+1. User inputs soil test data via `SoilInput.jsx`
+2. Data sent to `/api/soil/input` and `/api/predictions/fertility`
+3. ML model processes data with weather integration
+4. Results displayed on `Dashboard.jsx` with recommendations
+5. Historical data available via `History.jsx`
 
-## Environment Configuration
+### ML Model Integration
+- Models are loaded once at app startup in `services/enhanced_predictor.py`
+- Real-time prediction via `/api/predictions/fertility`
+- Automatic model retraining capabilities with new user data
+- Fertilizer recommendations based on nutrient deficiencies
+- Crop suggestions considering soil conditions and regional factors
 
-### Required Environment Variables
-Create `.env` file in `backend/` directory:
+## Key Files to Understand
+
+### Backend Core
+- `app.py` - Main Flask application and configuration
+- `models/user.py`, `models/soil_data.py` - Database schema
+- `ml_models/enhanced_fertility_model.py` - Stacking ensemble ML implementation
+- `services/enhanced_predictor.py` - Prediction service layer
+- `routes/predictions.py` - ML integration endpoints
+
+### Frontend Core  
+- `src/App.jsx` - Main app component with routing
+- `src/contexts/AuthContext.jsx` - Authentication state management
+- `src/pages/Dashboard.jsx` - Main user interface after analysis
+- `src/pages/SoilInput.jsx` - Data collection form
+
+### Development Tools
+- `manage_db.py` - Comprehensive database management utilities
+- `quick_query.py` - Interactive database queries
+- `test_integration.py` - API testing suite
+
+## Environment Variables
+Required in `backend/.env`:
 ```
 FLASK_APP=app.py
 FLASK_ENV=development
-SECRET_KEY=your-secret-key-change-this-in-production
-JWT_SECRET_KEY=jwt-secret-change-this-in-production
-OPENWEATHER_API_KEY=your-openweather-api-key-here
+SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=jwt-secret-key  
+OPENWEATHER_API_KEY=your-api-key
 DATABASE_URL=sqlite:///terra_scope.db
 ```
 
-### API Keys Setup
-- OpenWeatherMap API: Sign up at https://openweathermap.org/api for free API key
-- Required for weather integration that enhances ML predictions
-- Application provides fallback weather data if API key missing
-
 ## Development Notes
-
-### ML Model Behavior
-- Model auto-trains with synthetic data on first run if no pre-trained model exists
-- Trained models saved as `.pkl` files in `ml_models/` (ignored by git)
-- Model supports incremental learning with new real user data
-- Feature scaling handled internally by StandardScaler
-
-### Database Schema
-- `users` table: Authentication and profile information
-- `soil_data` table: Soil parameters, ML predictions, and recommendations
-- Foreign key relationship between users and their soil data
-- JSON fields store complex recommendation data
-
-### Frontend-Backend Communication  
-- Vite proxy configured to route `/api/*` requests to Flask backend (port 5000)
-- Frontend runs on port 3000, backend on port 5000
-- CORS enabled in Flask for cross-origin requests during development
-
-### Testing Strategy
-- Backend: Flask application context required for database operations
-- ML models: Test with synthetic data generation functions
-- API endpoints: Test with JWT authentication headers
-- Frontend: Component testing with mocked API responses
-
-## Code Style and Patterns
-
-### Backend Conventions
-- Blueprint organization by feature (`auth`, `soil`, `predictions`)
-- SQLAlchemy model methods for business logic (`to_dict()`, `get_npk_ratio()`)
-- Error handling with appropriate HTTP status codes
-- Environment variable configuration with fallbacks
-
-### Frontend Conventions
-- Functional React components with hooks
-- Page components handle routing and state management  
-- Service layer abstracts API communication
-- Plain CSS styling (no UI frameworks per project requirements)
-
-### ML Code Patterns
-- Class-based model encapsulation with clear lifecycle methods
-- Synthetic data generation for initial training
-- Graceful degradation to rule-based predictions
-- Feature preprocessing and scaling handled internally
-
-## Common Issues and Solutions
-
-### Backend Issues
-- **Model loading fails**: Check if `.pkl` files exist, model will auto-train if missing
-- **Weather API errors**: Application falls back to default weather data
-- **Database errors**: Ensure Flask application context for SQLAlchemy operations
-- **JWT errors**: Verify token generation and validation in authentication routes
-
-### Frontend Issues  
-- **API connection errors**: Verify Vite proxy configuration for `/api` routes
-- **CORS errors**: Ensure Flask-CORS is properly configured
-- **Build errors**: Check for proper import paths and component structure
-- **Routing issues**: Verify React Router setup and component imports
+- Backend runs on localhost:5000, frontend on localhost:3000
+- CORS configured for both localhost and 127.0.0.1 addresses
+- JWT tokens required for all protected endpoints
+- Database automatically created on first run
+- ML models generate synthetic training data if no real data exists
+- Weather integration requires OpenWeatherMap API key
+- All passwords are bcrypt hashed

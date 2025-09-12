@@ -30,17 +30,46 @@ function SoilInput() {
     setSuccess(false)
 
     try {
-      // TODO: Implement API call to save soil data
-      console.log('Soil data:', soilData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      const authToken = localStorage.getItem('authToken')
+      if (!authToken) {
+        setError('Authentication required. Please log in.')
+        return
+      }
+
+      // Submit soil data to backend
+      const soilResponse = await fetch('http://localhost:5000/api/soil/input', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(soilData),
+      })
+
+      if (!soilResponse.ok) {
+        throw new Error(`Failed to save soil data: ${soilResponse.status}`)
+      }
+
+      // Get predictions immediately
+      const predictionResponse = await fetch('http://localhost:5000/api/predictions/fertility', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(soilData),
+      })
+
+      if (!predictionResponse.ok) {
+        throw new Error(`Failed to get predictions: ${predictionResponse.status}`)
+      }
+
+      console.log('✅ Soil data saved and analyzed successfully!')
       setSuccess(true)
-      // TODO: Redirect to dashboard or show success message
       
     } catch (err) {
-      setError('Failed to save soil data. Please try again.')
+      console.error('Error submitting soil data:', err)
+      setError(`Failed to save soil data: ${err.message}`)
     } finally {
       setLoading(false)
     }
@@ -67,12 +96,11 @@ function SoilInput() {
         <div className="card text-center">
           <h2>✅ Soil Data Saved Successfully!</h2>
           <p>Your soil test results have been recorded and are ready for analysis.</p>
-          <div>
+          <div className="btn-group">
             <Link to="/dashboard" className="btn btn-primary">View Analysis</Link>
             <button 
               onClick={resetForm} 
               className="btn btn-secondary"
-              style={{marginLeft: '1rem'}}
             >
               Add More Data
             </button>

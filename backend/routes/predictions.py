@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.user import User
 from models.soil_data import SoilData
-from ml_models.fertility_model import FertilityPredictor
+from services.enhanced_predictor import enhanced_predictor
 from utils.weather import get_weather_data
 from utils.recommendations import get_fertilizer_recommendations, get_crop_suggestions
 from database import db
@@ -28,8 +28,15 @@ def predict_fertility():
             'nitrogen': float(data['nitrogen']),
             'phosphorus': float(data['phosphorus']),
             'potassium': float(data['potassium']),
-            'organic_carbon': float(data['organicCarbon']),
-            'moisture': float(data.get('moisture', 20))  # Default moisture
+            'organic_matter': float(data.get('organicCarbon', 2.5)),  # Map to organic_matter
+            'moisture': float(data.get('moisture', 25)),
+            'temperature': float(data.get('temperature', 22)),
+            'sulfur': float(data.get('sulfur', 20)),
+            'magnesium': float(data.get('magnesium', 50)),
+            'calcium': float(data.get('calcium', 500)),
+            'clay': float(data.get('clay', 25)),
+            'silt': float(data.get('silt', 35)),
+            'sand': float(data.get('sand', 40))
         }
         
         # Get weather data if location is available
@@ -37,15 +44,18 @@ def predict_fertility():
         if user.location:
             weather_data = get_weather_data(user.location)
         
-        # Create fertility predictor instance
-        predictor = FertilityPredictor()
+        # Make prediction using enhanced model
+        prediction_result = enhanced_predictor.predict_fertility(soil_params)
         
-        # Make prediction
-        fertility_prediction = predictor.predict_fertility(soil_params, weather_data)
+        # Format fertility prediction
+        fertility_prediction = {
+            'level': prediction_result['fertility_level'],
+            'score': prediction_result['fertility_score'],
+            'analysis': prediction_result['analysis']
+        }
         
-        # Get recommendations
-        fertilizer_recs = get_fertilizer_recommendations(soil_params, fertility_prediction)
-        crop_suggestions = get_crop_suggestions(soil_params, data.get('season', 'spring'))
+        fertilizer_recs = prediction_result['fertilizer_recommendations']
+        crop_suggestions = prediction_result['crop_recommendations']
         
         # Store prediction result (optional)
         latest_soil = SoilData.query.filter_by(user_id=user.id).order_by(SoilData.created_at.desc()).first()
@@ -59,7 +69,7 @@ def predict_fertility():
         return jsonify({
             'fertility': fertility_prediction,
             'fertilizer_recommendations': fertilizer_recs,
-            'crop_suggestions': crop_suggestions,
+            'crop_recommendations': crop_suggestions,
             'weather_impact': weather_data
         }), 200
         
@@ -90,8 +100,15 @@ def analyze_latest_soil():
             'nitrogen': latest_soil.nitrogen,
             'phosphorus': latest_soil.phosphorus,
             'potassium': latest_soil.potassium,
-            'organic_carbon': latest_soil.organic_carbon,
-            'moisture': latest_soil.moisture
+            'organic_matter': latest_soil.organic_carbon,
+            'moisture': latest_soil.moisture,
+            'temperature': 22.0,  # Default temperature
+            'sulfur': 20.0,      # Default sulfur
+            'magnesium': 50.0,   # Default magnesium
+            'calcium': 500.0,    # Default calcium
+            'clay': 25.0,        # Default clay
+            'silt': 35.0,        # Default silt
+            'sand': 40.0         # Default sand
         }
         
         # Get weather data
@@ -99,15 +116,18 @@ def analyze_latest_soil():
         if user.location:
             weather_data = get_weather_data(user.location)
         
-        # Create fertility predictor instance
-        predictor = FertilityPredictor()
+        # Make prediction using enhanced model
+        prediction_result = enhanced_predictor.predict_fertility(soil_params)
         
-        # Make prediction
-        fertility_prediction = predictor.predict_fertility(soil_params, weather_data)
+        # Format fertility prediction
+        fertility_prediction = {
+            'level': prediction_result['fertility_level'],
+            'score': prediction_result['fertility_score'],
+            'analysis': prediction_result['analysis']
+        }
         
-        # Get recommendations
-        fertilizer_recs = get_fertilizer_recommendations(soil_params, fertility_prediction)
-        crop_suggestions = get_crop_suggestions(soil_params, latest_soil.season or 'spring')
+        fertilizer_recs = prediction_result['fertilizer_recommendations']
+        crop_suggestions = prediction_result['crop_recommendations']
         
         # Update soil record with predictions
         latest_soil.fertility_level = fertility_prediction['level']
@@ -117,7 +137,7 @@ def analyze_latest_soil():
         db.session.commit()
         
         return jsonify({
-            'soil_data': {
+            'soilData': {
                 'id': latest_soil.id,
                 'ph': latest_soil.ph,
                 'nitrogen': latest_soil.nitrogen,
@@ -131,7 +151,7 @@ def analyze_latest_soil():
             },
             'fertility': fertility_prediction,
             'fertilizer_recommendations': fertilizer_recs,
-            'crop_suggestions': crop_suggestions,
+            'crop_recommendations': crop_suggestions,
             'weather_impact': weather_data
         }), 200
         

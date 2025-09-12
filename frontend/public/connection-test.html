@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - Terra Scope</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #cce7ff; color: #004085; border: 1px solid #b8daff; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            padding: 12px 24px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+        }
+        button:hover { background-color: #0056b3; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Terra Scope Connection Test</h1>
+        <p>This page tests the connection between frontend and backend to diagnose "Failed to fetch" errors.</p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="testConnection()">🧪 Test Backend Connection</button>
+            <button onclick="testAuth()">🔐 Test Authentication</button>
+            <button onclick="testDashboardAPI()">📊 Test Dashboard API</button>
+            <button onclick="clearResults()">🧹 Clear Results</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(div);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testConnection() {
+            log('🔄 Testing backend connection...', 'info');
+            
+            // Test different backend URLs
+            const testUrls = [
+                'http://localhost:5000/',
+                'http://127.0.0.1:5000/',
+                'http://localhost:5000/api/health'
+            ];
+            
+            for (const url of testUrls) {
+                try {
+                    log(`Testing ${url}...`, 'info');
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`✅ ${url} - SUCCESS (${response.status})`, 'success');
+                        log(`Response: ${JSON.stringify(data)}`, 'info');
+                    } else {
+                        log(`⚠️ ${url} - Status ${response.status}`, 'warning');
+                    }
+                } catch (error) {
+                    log(`❌ ${url} - ERROR: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testAuth() {
+            log('🔄 Testing authentication...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'test@terrascope.com',
+                        password: 'test123'
+                    }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Authentication successful!`, 'success');
+                    log(`User: ${data.user.firstName} ${data.user.lastName}`, 'info');
+                    
+                    // Store token for dashboard test
+                    localStorage.setItem('testToken', data.access_token);
+                    log(`Token stored for dashboard test`, 'info');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Authentication failed: ${errorData.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Authentication error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDashboardAPI() {
+            log('🔄 Testing dashboard API...', 'info');
+            
+            const token = localStorage.getItem('testToken') || localStorage.getItem('authToken');
+            if (!token) {
+                log('❌ No auth token found. Run authentication test first.', 'error');
+                return;
+            }
+            
+            try {
+                // Test the exact endpoint that's failing
+                const response = await fetch('http://localhost:5000/api/predictions/analyze-latest', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Dashboard API successful!`, 'success');
+                    log(`Fertility Score: ${data.fertility.score}`, 'success');
+                } else if (response.status === 404) {
+                    log(`⚠️ No soil data found (404). This is expected for new users.`, 'warning');
+                    log(`Try adding soil data first through the main app.`, 'info');
+                } else if (response.status === 401) {
+                    log(`❌ Authentication error (401). Token may be expired.`, 'error');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Dashboard API error (${response.status}): ${JSON.stringify(errorData)}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Dashboard API network error: ${error.message}`, 'error');
+                log(`This is likely the cause of "Failed to fetch" in the main app.`, 'error');
+            }
+        }
+
+        // Auto-run connection test on page load
+        window.onload = function() {
+            log('🚀 Connection test page loaded. Click buttons to test!', 'info');
+            testConnection();
+        };
+    </script>
+</body>
+</html>
